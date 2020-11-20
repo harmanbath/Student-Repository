@@ -1,0 +1,9 @@
+select Name from students where CWID='10115'
+
+select Major,count(*) from students group by Major
+
+select Grade from grades where Course = 'SSW 810' group by Grade order by count(*) DESC limit 1
+
+select Name, CWID, count(Course) from students S, grades G where G.StudentCWID = S.CWID group by StudentCWID
+
+select s.Name, s.CWID, g.Course, g.Grade, i.Name from students s, grades g, instructors i where g.InstructorCWID = i.CWID and  s.CWID = g.StudentCWID order by s.Name;

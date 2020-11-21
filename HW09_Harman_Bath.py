@@ -10,6 +10,10 @@ from instructor import Instructor
 from prettytable import PrettyTable
 from major import Major
 from HW08_Harman_Bath import file_reader
+import sqlite3
+
+DB_PATH = 'C:\\Users\\hrmnv\\Desktop\\SSW_810\\Student-Repository\\HW_11\\mydb.db'
+
 class University:
     """
     Store all info for all students and instructors
@@ -37,6 +41,7 @@ class University:
         self.print_major_table()
         self.print_student_table()
         self.print_instructor_table()
+        self.student_grades_table_db(DB_PATH)
 
         
 
@@ -45,7 +50,7 @@ class University:
         CWID, Name, Major
         """
 
-        for student in file_reader(self.students_path, 3, sep = ';', header=True):
+        for student in file_reader(self.students_path, 3, sep = '\t', header=True):
             CWID, name, major = student
 
             if major not in self.majors:
@@ -59,7 +64,7 @@ class University:
         CWID, Name, Department
         """
 
-        for instructor in file_reader(self.instructors_path, 3, sep = '|', header=True):
+        for instructor in file_reader(self.instructors_path, 3, sep = '\t', header=True):
             self.instructors[instructor[0]] = Instructor(instructor)
 
 
@@ -68,7 +73,7 @@ class University:
         Structure: CWID_student, Course, Grade, CWID_instructor
         """
 
-        for CWID_student, course, grade, CWID_instructor in file_reader(self.grades_path, 4, sep = '|', header=True):
+        for CWID_student, course, grade, CWID_instructor in file_reader(self.grades_path, 4, sep = '\t', header=True):
             if CWID_student not in self.students.keys():
                 raise ValueError('Student CWID {} is not in the student system.'.format(CWID_student))
             
@@ -134,8 +139,25 @@ class University:
         print('Majors Summary')
         print(pt)
 
+    def student_grades_table_db(self, DB_PATH):
+        db = sqlite3.connect(DB_PATH)
+
+        query = """SELECT s.Name, s.CWID, g.Course, g.Grade, i.Name
+                   FROM students s, grades g, instructors i 
+                   WHERE g.InstructorCWID = i.CWID
+                   AND  s.CWID = g.StudentCWID ORDER BY s.Name;"""
+
+        pt = PrettyTable(field_names = ['Name','CWID','Course','Grade','Instructor'])
+
+        for row in db.execute(query):
+            pt.add_row(row)
+
+        print(pt)
+        
+
+
 def main():
-    path = 'C:\\Users\\hrmnv\\Desktop\\SSW_810\\Database\\Stevens'
+    path = 'C:\\Users\\hrmnv\\Desktop\\SSW_810\\Student-Repository\\HW_11'
     University(path)
 
 if __name__ == '__main__':
